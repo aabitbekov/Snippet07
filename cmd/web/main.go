@@ -1,15 +1,16 @@
 package main
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", snippet)
+	mux.HandleFunc("/snippet", showSnippet)
 	mux.HandleFunc("/snippet/create", createSnippet)
-
+	log.Println("Starting server on :4000")
 	err := http.ListenAndServe(":4000", mux)
-	if err != nil {
-		panic(err.Error())
-	}
+	log.Fatal(err)
 }
