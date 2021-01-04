@@ -8,5 +8,8 @@ func main() {
 	mux.HandleFunc("/snippet", snippet)
 	mux.HandleFunc("/snippet/create", createSnippet)
 
-	http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":4000", mux)
+	if err != nil {
+		panic(err.Error())
+	}
 }
