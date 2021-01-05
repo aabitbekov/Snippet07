@@ -24,7 +24,7 @@ func main() {
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  app.routes(), // Call the new app.routes() method
+		Handler:  app.routes(),
 	}
 	infoLog.Printf("Starting server on %s", *addr)
 	err := srv.ListenAndServe()
