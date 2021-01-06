@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 	"net/http"
 	"os"
 )
+
+const GetById = "SELECT id, name FROM person where id=$1"
 
 type application struct {
 	errorLog *log.Logger
@@ -13,6 +17,18 @@ type application struct {
 }
 
 func main() {
+	pool, err := pgxpool.Connect(context.Background(), "user=postgres password=postgres host=localhost port=5432 dbname=Snippet07 sslmode=disable pool_max_conns=10")
+	if err != nil {
+		log.Fatalf("Unable to connection to database: %v\n", err)
+	}
+	var id int
+	var name string
+	err = pool.QueryRow(context.Background(), GetById, 1).Scan(&id, &name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(id, name)
+
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	flag.Parse()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -27,6 +43,6 @@ func main() {
 		Handler:  app.routes(),
 	}
 	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
