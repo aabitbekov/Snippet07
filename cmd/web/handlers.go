@@ -1,6 +1,8 @@
 package main
 
 import (
+	"Snippet07/pkg/models"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -8,6 +10,16 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	//s, err := app.snippets.Latest()
+	//if err != nil {
+	//	if errors.Is(err, models.ErrNoRecord) {
+	//		app.notFound(w)
+	//	} else {
+	//		app.serverError(w, err)
+	//	}
+	//	return
+	//}
+
 	if r.URL.Path != "/" {
 		app.notFound(w)
 		return
@@ -26,14 +38,38 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 	}
+
 }
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		app.notFound(w) // Use the notFound() helper.
+		app.notFound(w)
 		return
 	}
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	s, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	err = ts.Execute(w, s)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 }
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -41,5 +77,14 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper.
 		return
 	}
-	w.Write([]byte("Create a new snippet..."))
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
+	expires := "7"
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	fmt.Fprint(w, id)
 }
