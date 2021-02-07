@@ -10,15 +10,15 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	//s, err := app.snippets.Latest()
-	//if err != nil {
-	//	if errors.Is(err, models.ErrNoRecord) {
-	//		app.notFound(w)
-	//	} else {
-	//		app.serverError(w, err)
-	//	}
-	//	return
-	//}
+	s, err := app.snippets.Latest()
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
 
 	if r.URL.Path != "/" {
 		app.notFound(w)
@@ -34,7 +34,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	err = ts.Execute(w, nil)
+	err = ts.Execute(w, s)
 	if err != nil {
 		app.serverError(w, err)
 	}

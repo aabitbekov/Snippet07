@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  snippet07:
+    build: ./
+    command: ./wait-for-postgres.sh db ./snippet07
+    ports:
+      - 4000:4000
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=postgres
+
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+    - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+    - 5432:5432
+
